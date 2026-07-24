@@ -76,7 +76,29 @@ function updateTimestamp() {
     document.getElementById("lastUpdate").textContent = `Última actualización: ${hh}:${mm}`;
 }
 
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+function logout() {
+    const token = getToken();
+    if (token) {
+        fetch("/logout", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` }
+        }).catch(() => {});
+    }
+    localStorage.removeItem("token");
+    window.location.href = "/login.html";
+}
+
 async function loadAttendance() {
+    const token = getToken();
+    if (!token) {
+        window.location.href = "/login.html";
+        return;
+    }
+
     const tbody = document.getElementById("tableBody");
     tbody.innerHTML = `<tr><td colspan="2" class="empty-message">Cargando datos...</td></tr>`;
 
@@ -84,7 +106,13 @@ async function loadAttendance() {
 
     let records;
     try {
-        const res = await fetch("/attendance");
+        const res = await fetch("/attendance", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (res.status === 401) {
+            logout();
+            return;
+        }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         records = await res.json();
     } catch (err) {
@@ -99,6 +127,11 @@ async function loadAttendance() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    if (!getToken()) {
+        window.location.href = "/login.html";
+        return;
+    }
+
     const datePicker = document.getElementById("datePicker");
     const now = new Date();
     const hondurasMs = now.getTime() + HONDURAS_OFFSET * 3600000;
@@ -107,6 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
     datePicker.value = today;
 
     document.getElementById("refreshBtn").addEventListener("click", loadAttendance);
+    document.getElementById("logoutBtn").addEventListener("click", logout);
     datePicker.addEventListener("change", loadAttendance);
 
     loadAttendance();

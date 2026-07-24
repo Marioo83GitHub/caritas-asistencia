@@ -71,6 +71,22 @@ h1 {
     background: #2f4bc0;
 }
 
+.logout-btn {
+    padding: 10px 24px;
+    background: #fff;
+    color: #b42318;
+    border: 1px solid #fecdca;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #fef3f2;
+}
+
 .summary {
     display: flex;
     justify-content: space-between;
