@@ -1,0 +1,185 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+
+header {
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#datePicker {
+    padding: 10px 14px;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #fff;
+    color: #1a1a2e;
+    flex: 1;
+    min-width: 180px;
+    cursor: pointer;
+}
+
+#datePicker:focus {
+    outline: none;
+    border-color: #4361ee;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+}
+
+#refreshBtn {
+    padding: 10px 24px;
+    background: #4361ee;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#refreshBtn:hover {
+    background: #3a56d4;
+}
+
+#refreshBtn:active {
+    background: #2f4bc0;
+}
+
+.summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+    color: #667085;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.table-wrapper {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: #f8f9fb;
+}
+
+th {
+    text-align: left;
+    padding: 14px 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #667085;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid #eaecf0;
+}
+
+td {
+    padding: 14px 20px;
+    border-bottom: 1px solid #f2f4f7;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr:hover {
+    background: #f8f9fb;
+}
+
+.employee-name {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.punch-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.punch-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.badge-in {
+    background: #ecfdf3;
+    color: #067647;
+    border: 1px solid #abefc6;
+}
+
+.badge-out {
+    background: #fef3f2;
+    color: #b42318;
+    border: 1px solid #fecdca;
+}
+
+.empty-message {
+    text-align: center;
+    color: #98a2b3;
+    padding: 40px 20px !important;
+}
+
+@media (max-width: 500px) {
+    .container {
+        padding: 16px 12px;
+    }
+
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    th, td {
+        padding: 10px 12px;
+    }
+
+    .employee-name {
+        font-size: 0.9rem;
+    }
+
+    .punch-badge {
+        padding: 3px 8px;
+        font-size: 0.78rem;
+    }
+}

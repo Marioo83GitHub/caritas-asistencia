@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Asistencia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Control de Asistencia - Cáritas de Honduras</h1>
+            <div class="controls">
+                <input type="date" id="datePicker">
+                <button id="refreshBtn">Actualizar</button>
+            </div>
+        </header>
+
+        <div class="summary">
+            <span id="employeeCount">0 empleados</span>
+            <span id="lastUpdate">Última actualización: --:--</span>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>Empleado</th>
+                        <th>Marcaciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="2" class="empty-message">Cargando datos...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="mockdata.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
