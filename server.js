@@ -147,7 +147,6 @@ app.get("/attendance/export", authMiddleware, async (req, res) => {
                 { header: "Empleado", key: "employee", width: 35 },
                 { header: "Fecha", key: "date", width: 12 },
                 { header: "Hora", key: "time", width: 10 },
-                { header: "Tipo", key: "type", width: 10 },
                 { header: "Terminal", key: "terminal", width: 20 }
             ];
 
@@ -165,13 +164,11 @@ app.get("/attendance/export", authMiddleware, async (req, res) => {
                 const h = new Date(hondurasMs);
                 const dateStr = `${h.getUTCFullYear()}-${String(h.getUTCMonth() + 1).padStart(2, "0")}-${String(h.getUTCDate()).padStart(2, "0")}`;
                 const timeStr = `${String(h.getUTCHours()).padStart(2, "0")}:${String(h.getUTCMinutes()).padStart(2, "0")}`;
-                const typeStr = r.punch_state === "0" ? "Entrada" : "Salida";
 
                 sheet.addRow({
                     employee: r.employee,
                     date: dateStr,
                     time: timeStr,
-                    type: typeStr,
                     terminal: r.terminal_alias
                 });
             }
