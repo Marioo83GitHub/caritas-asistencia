@@ -140,7 +140,7 @@ app.get("/attendance/export", authMiddleware, async (req, res) => {
 
         for (const [key, monthRecords] of Object.entries(byMonth).sort()) {
             const [year, month] = key.split("-");
-            const sheetName = `${monthNames[parseInt(month) - 1]} ${year}`;
+            const sheetName = `${monthNames[parseInt(month) - 1]}-${year}`;
             const sheet = workbook.addWorksheet(sheetName);
 
             sheet.columns = [
