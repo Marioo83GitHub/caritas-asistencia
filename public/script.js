@@ -141,8 +141,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("refreshBtn").addEventListener("click", loadAttendance);
     document.getElementById("logoutBtn").addEventListener("click", logout);
+    document.getElementById("exportBtn").addEventListener("click", openExportModal);
+    document.getElementById("cancelExport").addEventListener("click", closeExportModal);
+    document.getElementById("confirmExport").addEventListener("click", handleExport);
     datePicker.addEventListener("change", loadAttendance);
 
     loadAttendance();
     setInterval(loadAttendance, 10000);
 });
+
+function openExportModal() {
+    const modal = document.getElementById("exportModal");
+    const datePicker = document.getElementById("datePicker");
+    const today = datePicker.value;
+    document.getElementById("exportFrom").value = today;
+    document.getElementById("exportTo").value = today;
+    modal.classList.add("active");
+}
+
+function closeExportModal() {
+    document.getElementById("exportModal").classList.remove("active");
+}
+
+async function handleExport() {
+    const from = document.getElementById("exportFrom").value;
+    const to = document.getElementById("exportTo").value;
+
+    if (!from || !to) {
+        alert("Selecciona ambas fechas");
+        return;
+    }
+
+    if (from > to) {
+        alert("La fecha 'Desde' no puede ser mayor que 'Hasta'");
+        return;
+    }
+
+    const token = getToken();
+    if (!token) {
+        window.location.href = "/login.html";
+        return;
+    }
+
+    try {
+        const res = await fetch(`/attendance/export?from=${from}&to=${to}`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+            logout();
+            return;
+        }
+
+        if (!res.ok) {
+            const data = await res.json();
+            alert(data.error || "Error al exportar");
+            return;
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `asistencia_${from}_${to}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        closeExportModal();
+    } catch (err) {
+        alert("Error al conectar con el servidor");
+    }
+}

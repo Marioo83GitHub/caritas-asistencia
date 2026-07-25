@@ -13,6 +13,7 @@
             <div class="controls">
                 <input type="date" id="datePicker">
                 <button id="refreshBtn">Actualizar</button>
+                <button id="exportBtn" class="export-btn">Exportar Excel</button>
                 <button id="logoutBtn" class="logout-btn">Cerrar Sesión</button>
             </div>
         </header>
@@ -36,6 +37,27 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <h2>Exportar a Excel</h2>
+            <p class="modal-description">Selecciona el rango de fechas para exportar los registros.</p>
+            <div class="modal-fields">
+                <label>
+                    Desde:
+                    <input type="date" id="exportFrom">
+                </label>
+                <label>
+                    Hasta:
+                    <input type="date" id="exportTo">
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button id="cancelExport" class="cancel-btn">Cancelar</button>
+                <button id="confirmExport" class="confirm-btn">Descargar</button>
+            </div>
         </div>
     </div>
 
