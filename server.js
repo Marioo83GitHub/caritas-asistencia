@@ -21,7 +21,29 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD
 });
 
+const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+const DAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+
 const tokens = new Map();
+
+function getHondurasParts(punchTime) {
+    const date = new Date(punchTime);
+    const h = new Date(date.getTime() + (-6) * 3600000);
+    const year = h.getUTCFullYear();
+    const month = String(h.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(h.getUTCDate()).padStart(2, "0");
+    const hours = String(h.getUTCHours()).padStart(2, "0");
+    const minutes = String(h.getUTCMinutes()).padStart(2, "0");
+    return {
+        dateKey: `${year}-${month}-${day}`,
+        dateStr: `${year}-${month}-${day}`,
+        timeStr: `${hours}:${minutes}`,
+        dayName: DAY_NAMES[h.getUTCDay()],
+        monthName: MONTH_NAMES[h.getUTCMonth()],
+        dayNumber: day,
+        year
+    };
+}
 
 function generateToken() {
     return crypto.randomBytes(32).toString("hex");
@@ -136,11 +158,9 @@ app.get("/attendance/export", authMiddleware, async (req, res) => {
         workbook.creator = "Cáritas de Honduras";
         workbook.created = new Date();
 
-        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
         for (const [key, monthRecords] of Object.entries(byMonth).sort()) {
             const [year, month] = key.split("-");
-            const sheetName = `${monthNames[parseInt(month) - 1]}-${year}`;
+            const sheetName = `${MONTH_NAMES[parseInt(month) - 1]}-${year}`;
             const sheet = workbook.addWorksheet(sheetName);
 
             sheet.columns = [
@@ -159,19 +179,90 @@ app.get("/attendance/export", authMiddleware, async (req, res) => {
             sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
 
             for (const r of monthRecords) {
-                const date = new Date(r.punch_time);
-                const hondurasMs = date.getTime() + (-6) * 3600000;
-                const h = new Date(hondurasMs);
-                const dateStr = `${h.getUTCFullYear()}-${String(h.getUTCMonth() + 1).padStart(2, "0")}-${String(h.getUTCDate()).padStart(2, "0")}`;
-                const timeStr = `${String(h.getUTCHours()).padStart(2, "0")}:${String(h.getUTCMinutes()).padStart(2, "0")}`;
+                const p = getHondurasParts(r.punch_time);
 
                 sheet.addRow({
                     employee: r.employee,
-                    date: dateStr,
-                    time: timeStr,
+                    date: p.dateStr,
+                    time: p.timeStr,
                     terminal: r.terminal_alias
                 });
             }
+        }
+
+        const dayGroups = new Map();
+        for (const r of records) {
+            const p = getHondurasParts(r.punch_time);
+            if (!dayGroups.has(p.dateKey)) {
+                dayGroups.set(p.dateKey, { meta: p, employees: new Map() });
+            }
+            const day = dayGroups.get(p.dateKey);
+            if (!day.employees.has(r.employee)) {
+                day.employees.set(r.employee, []);
+            }
+            day.employees.get(r.employee).push({
+                time: p.timeStr,
+                state: String(r.punch_state),
+                terminal: r.terminal_alias
+            });
+        }
+
+        let maxPunches = 0;
+        for (const day of dayGroups.values()) {
+            for (const marks of day.employees.values()) {
+                if (marks.length > maxPunches) maxPunches = marks.length;
+            }
+        }
+
+        const totalColumns = 1 + maxPunches;
+        const groupedSheet = workbook.addWorksheet("Agrupado por Día");
+        groupedSheet.columns = [
+            { width: 35 },
+            ...Array.from({ length: maxPunches }, () => ({ width: 14 }))
+        ];
+
+        for (const day of [...dayGroups.values()].sort((a, b) => a.meta.dateKey.localeCompare(b.meta.dateKey))) {
+            const title = `${day.meta.dayName} ${day.meta.dayNumber} de ${day.meta.monthName} de ${day.meta.year}`;
+            const titleRow = groupedSheet.addRow([title]);
+            groupedSheet.mergeCells(titleRow.number, 1, titleRow.number, totalColumns);
+            titleRow.getCell(1).font = { bold: true, size: 12, color: { argb: "FF1D4ED8" } };
+            titleRow.getCell(1).alignment = { horizontal: "left", vertical: "middle" };
+            titleRow.height = 20;
+
+            const headerRow = groupedSheet.addRow([
+                "Empleado",
+                ...Array.from({ length: maxPunches }, (_, i) => `Marcación ${i + 1}`)
+            ]);
+            headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+            for (let c = 1; c <= totalColumns; c++) {
+                headerRow.getCell(c).fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "FF4361EE" }
+                };
+            }
+
+            const employees = [...day.employees.keys()].sort((a, b) => a.localeCompare(b));
+            for (const employee of employees) {
+                const marks = day.employees.get(employee).sort((a, b) => a.time.localeCompare(b.time));
+                const row = groupedSheet.addRow([employee, ...marks.map((m) => m.time)]);
+                row.getCell(1).font = { bold: true };
+                row.getCell(1).alignment = { vertical: "middle" };
+
+                marks.forEach((m, i) => {
+                    const cell = row.getCell(i + 2);
+                    const isEntry = m.state === "0";
+                    cell.fill = {
+                        type: "pattern",
+                        pattern: "solid",
+                        fgColor: { argb: isEntry ? "FFECFDF3" : "FFFEF3F2" }
+                    };
+                    cell.font = { color: { argb: isEntry ? "FF067647" : "FFB42318" } };
+                    cell.alignment = { horizontal: "center", vertical: "middle" };
+                });
+            }
+
+            groupedSheet.addRow([]);
         }
 
         const buffer = await workbook.xlsx.writeBuffer();
